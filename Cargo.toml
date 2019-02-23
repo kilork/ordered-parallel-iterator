@@ -1,0 +1,11 @@
+[package]
+name = "ordered-parallel-iterator"
+version = "0.1.0"
+license = "Unlicense OR MIT"
+authors = ["Alexander Korolev <kilork@yandex.ru>"]
+edition = "2018"
+
+[dependencies]
+crossbeam = "0.7"
+num_cpus = "1.10"
+std-semaphore = "0.1"
