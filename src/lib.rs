@@ -51,6 +51,11 @@ impl<O> OrderedParallelIterator<O> {
                 }
             }
             running_flag.store(false, Ordering::Relaxed);
+            if first {
+                // means empty range
+                let stealer = tasks.stealer();
+                tx.send(stealer).unwrap();
+            }
         }));
 
         let tasks = rx.recv().unwrap();
@@ -108,4 +113,12 @@ mod tests {
             assert_eq!(iterator.next(), Some(i + 1));
         }
     }
+
+    #[test]
+    fn empty() {
+        for _ in crate::OrderedParallelIterator::new(|| 0..0, || run_me) {
+            panic!("Must not reach this point");
+        }
+    }
+
 }
