@@ -83,13 +83,13 @@ impl<T> Iterator for OrderedParallelIterator<T> {
             .take()
             .unwrap()
             .join()
-            .expect("A child thread has paniced.");
+            .expect("The iterator thread has paniced.");
 
         self.scheduler_thread
             .take()
             .unwrap()
             .join()
-            .expect("A child thread has paniced.");
+            .expect("The scheduler thread has paniced.");
 
         None
     }
@@ -97,8 +97,16 @@ impl<T> Iterator for OrderedParallelIterator<T> {
 
 #[cfg(test)]
 mod tests {
+
+    fn run_me(x: usize) -> usize {
+        x + 1
+    }
+
     #[test]
     fn it_works() {
-        assert_eq!(2 + 2, 4);
+        let mut iterator = crate::OrderedParallelIterator::new(|| 0..10, || run_me);
+        for i in 0..10 {
+            assert_eq!(iterator.next(), Some(i + 1));
+        }
     }
 }
