@@ -1,5 +1,6 @@
 use crossbeam::channel::bounded;
 use crossbeam::deque::{Steal, Stealer, Worker};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use std::marker::Send;
 use std::marker::Sync;
@@ -10,10 +11,10 @@ use std::thread::JoinHandle;
 use std_semaphore::Semaphore;
 
 pub struct OrderedParallelIterator<O> {
-    iterator_thread: Option<JoinHandle<()>>,
     scheduler_thread: Option<JoinHandle<()>>,
     tasks: Stealer<JoinHandle<O>>,
     semaphore: Arc<Semaphore>,
+    running: Arc<AtomicBool>,
 }
 
 impl<O> OrderedParallelIterator<O> {
@@ -27,38 +28,38 @@ impl<O> OrderedParallelIterator<O> {
         P: IntoIterator<Item = I>,
     {
         let semaphore = Arc::new(Semaphore::new(num_cpus::get() as isize));
-        let (tx, jobs_rx) = bounded(num_cpus::get());
+        let (tx, rx) = bounded(num_cpus::get());
         let semaphore_copy = semaphore.clone();
-        let iterator_thread = Some(thread::spawn(move || {
-            for e in producer_ctor() {
-                semaphore_copy.acquire();
-                tx.send(e).expect("Producer thread failed to send job.");
-            }
-        }));
-
         let xform_ctor = Arc::new(xform_ctor);
-        let (tx, rx) = std::sync::mpsc::channel();
+        let running_flag = Arc::new(AtomicBool::new(true));
+        let running = running_flag.clone();
         let scheduler_thread = Some(thread::spawn(move || {
             let tasks = Worker::new_fifo();
-            let stealer = tasks.stealer();
-            tx.send(stealer).unwrap();
-            for e in jobs_rx {
+            let mut first = true;
+            for e in producer_ctor() {
+                semaphore_copy.acquire();
                 let xform_ctor = xform_ctor.clone();
                 let worker_thread = thread::spawn(move || {
                     let mut xform = xform_ctor();
                     xform(e)
                 });
                 tasks.push(worker_thread);
+                if first {
+                    let stealer = tasks.stealer();
+                    tx.send(stealer).unwrap();
+                    first = false;
+                }
             }
+            running_flag.store(false, Ordering::Relaxed);
         }));
 
         let tasks = rx.recv().unwrap();
 
         Self {
-            iterator_thread,
             scheduler_thread,
             tasks,
             semaphore,
+            running,
         }
     }
 }
@@ -72,18 +73,16 @@ impl<T> Iterator for OrderedParallelIterator<T> {
             let item = self.tasks.steal();
             match item {
                 Steal::Success(x) => {
-                    return Some(x.join().expect("Cannot get changeset from thread"));
+                    return Some(x.join().expect("Cannot get data from thread"));
                 }
-                Steal::Empty => break,
+                Steal::Empty => {
+                    if !self.running.load(Ordering::Relaxed) {
+                        break;
+                    }
+                }
                 Steal::Retry => (),
             }
         }
-
-        self.iterator_thread
-            .take()
-            .unwrap()
-            .join()
-            .expect("The iterator thread has paniced.");
 
         self.scheduler_thread
             .take()
