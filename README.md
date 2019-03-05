@@ -1,6 +1,6 @@
 # ordered-parallel-iterator
 
-This crate provides an iterator over task result which performs tasks in parallel returning completed tasks in order of source range iterator. It can be useful if you need to process some data in parallel but need to have results in order of appeareance (FIFO).
+This crate provides an iterator over task results which performs tasks in parallel returning completed tasks in order of source range iterator. It can be useful if you need to process some data in parallel but need to have results in the order of appeareance (FIFO).
 
 ## Legal
 
