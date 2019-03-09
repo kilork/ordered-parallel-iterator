@@ -26,6 +26,7 @@ fn main() {
 }
 ```
 
+In this example each `run_me` call will happen in own thread, but results will be returned sequentially as fast as first will be finished. Count of pending tasks running in parallel bind to count of CPU cores.
 */
 
 use crossbeam::channel::bounded;
