@@ -1,5 +1,5 @@
 /*!
-Crate `ordered-parallel-iterator` provides an iterator over task results which performs tasks in parallel returning completed tasks in order of source range iterator. It can be useful if you need to process some data in parallel but need to have results in the order of appeareance (FIFO).
+Crate `ordered-parallel-iterator` provides an iterator over task results which performs tasks in parallel returning completed tasks in order of source range iterator. It can be useful if you need to process some data in parallel but need to have results in the order of appearance (FIFO).
 
 # Installation
 
@@ -19,8 +19,10 @@ fn run_me(x: usize) -> usize {
     x + 1
 }
 
-for i in OrderedParallelIterator::new(|| 0..10, || run_me) {
-    println!("Result from iterator: {}", i);
+fn main() {
+    for i in OrderedParallelIterator::new(|| 0..10, || run_me) {
+        println!("Result from iterator: {}", i);
+    }
 }
 ```
 
