@@ -1,6 +1,6 @@
 [package]
 name = "ordered-parallel-iterator"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Alexander Korolev <kilork@yandex.ru>"]
 description = """
 Performs tasks in parallel returning completed tasks in order of appearance.
@@ -14,5 +14,5 @@ edition = "2018"
 
 [dependencies]
 crossbeam = "0.7"
-num_cpus = "1.10"
+num_cpus = "1.13"
 std-semaphore = "0.1"
