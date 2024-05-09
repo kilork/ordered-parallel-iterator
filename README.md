@@ -12,7 +12,7 @@ Add following dependency to your `Cargo.toml`:
 
 ```toml,ignore
 [dependencies]
-ordered-parallel-iterator = "0.1"
+ordered-parallel-iterator = "0.2"
 ```
 
 ## Usage

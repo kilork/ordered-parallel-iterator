@@ -1,18 +1,17 @@
 [package]
 name = "ordered-parallel-iterator"
-version = "0.1.1"
-authors = ["Alexander Korolev <kilork@yandex.ru>"]
+version = "0.2.0"
+authors = ["Alexander Korolev <alexander.korolev.germany@gmail.com>"]
 description = """
 Performs tasks in parallel returning completed tasks in order of appearance.
 """
 homepage = "https://github.com/kilork/ordered-parallel-iterator"
 repository = "https://github.com/kilork/ordered-parallel-iterator"
-readme = "README.md"
 keywords = ["parallel", "iterator", "threads", "ordered"]
 license = "Unlicense OR MIT"
 edition = "2018"
 
 [dependencies]
-crossbeam = "0.7"
+crossbeam = "0.8"
 num_cpus = "1.13"
 std-semaphore = "0.1"
